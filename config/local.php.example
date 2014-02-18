@@ -1,12 +1,29 @@
 <?php
 
 return array(
-  'chartblocks' => array(
-	'key' => '',
-	'secret' => '',
-  ),
-  'twitter' => array(
-	'key' => '',
-	'secret' => '',
-  ),
+    'chartblocks' => array(
+        'token' => '',
+        'secret' => '',
+        'attendeeSetId' => '53037396c9a61d1552321575',
+        'tweetSetId' => '5303478ec9a61d6b4f321575',
+    ),
+    'eventbrite' => array(
+        'appKey' => '',
+        'userKey' => '',
+        'eventId' => '4512739726',
+    ),
+    'mongo' => array(
+        'database' => 'php2014',
+        'collection' => 'tweets',
+    ),
+    'twitter' => array(
+        'key' => '',
+        'secret' => '',
+        'token' => '',
+        'token_secret' => '',
+        'tracks' => array(
+            'php' => array('phpuk', 'phpuk14', 'phpuk2014', 'php14', 'php2014'),
+            'sochi' => array('sochi', 'sochi14')
+        )
+    ),
 );
