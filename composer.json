@@ -1,0 +1,14 @@
+{
+    "name": "chartblocks/php2014",
+    "description": "Collection of scripts for populating chart data for PHP2014 demo",
+    "require": {
+        "jublonet/codebird-php": "2.4.1",
+        "chartblocks/php-rest-sdk": "dev-master"
+    },
+    "authors": [
+        {
+            "name": "Arron Woods",
+            "email": "aw@chartblocks.com"
+        }
+    ]
+}
