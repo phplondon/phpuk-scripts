@@ -19,17 +19,41 @@ $result = $eb->event_list_attendees(array(
         ));
 
 $data = array();
+
+$friday = strtotime('2013-02-21');
+$saturday = strtotime('2013-02-22');
+
+$checkIns = array(
+    strtotime('2013-02-21 07:00'),
+    strtotime('2013-02-21 08:00'),
+    strtotime('2013-02-21 09:15'),
+    strtotime('2013-02-21 10:00'),
+    strtotime('2013-02-21 11:45'),
+    strtotime('2013-02-22 07:00'),
+    strtotime('2013-02-22 08:00'),
+    strtotime('2013-02-22 09:30'),
+    strtotime('2013-02-22 10:00'),
+    strtotime('2013-02-22 11:00'),
+);
+
 foreach ($result->attendees as $object) {
     $attendee = $object->attendee;
 
-    $checkInTime = null;
+    $date = null;
+    $floor = 0;
+
+    $date = $checkIns[array_rand($checkIns)];
+
     foreach ($attendee->barcodes as $barcodeObject) {
         $barcode = $barcodeObject->barcode;
         if ((string) $barcode->status == 'used') {
             $date = strtotime($barcode->date_modified) + 8 * 3600;
-            $floor = floor($date / 3600) * 3600;
-            $checkInTime = date('c', $floor);
+            break;
         }
+    }
+
+    if ($date) {
+        $floor = floor($date / 3600) * 3600;
     }
 
     $data[$attendee->id] = array(
@@ -38,8 +62,9 @@ foreach ($result->attendees as $object) {
         'company' => empty($attendee->company) ? 'n/a' : $attendee->company,
         'age' => empty($attendee->age) ? 'n/a' : $attendee->age,
         'gender' => empty($attendee->gender) ? 'n/a' : $attendee->gender,
-        'checkedIn' => ($checkInTime) ? 1 : null,
-        'checkedInAt' => $checkInTime,
+        'checkedInFriday' => ($floor >= $friday && $floor < $friday + 86400) ? 1 : null,
+        'checkedInSaturday' => ($floor >= $saturday && $floor < $saturday + 86400) ? 1 : null,
+        'checkedInAt' => date('H:i', $floor),
         'i' => 1
     );
 }
