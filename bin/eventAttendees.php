@@ -23,18 +23,18 @@ $data = array();
 $friday = strtotime('2013-02-21');
 $saturday = strtotime('2013-02-22');
 
-$checkIns = array(
-    strtotime('2013-02-21 07:00'),
-    strtotime('2013-02-21 08:00'),
-    strtotime('2013-02-21 09:15'),
-    strtotime('2013-02-21 10:00'),
-    strtotime('2013-02-21 11:45'),
-    strtotime('2013-02-22 07:00'),
-    strtotime('2013-02-22 08:00'),
-    strtotime('2013-02-22 09:30'),
-    strtotime('2013-02-22 10:00'),
-    strtotime('2013-02-22 11:00'),
-);
+//$checkIns = array(
+//    strtotime('2013-02-21 07:00'),
+//    strtotime('2013-02-21 08:00'),
+//    strtotime('2013-02-21 09:15'),
+//    strtotime('2013-02-21 10:00'),
+//    strtotime('2013-02-21 11:45'),
+//    strtotime('2013-02-22 07:00'),
+//    strtotime('2013-02-22 08:00'),
+//    strtotime('2013-02-22 09:30'),
+//    strtotime('2013-02-22 10:00'),
+//    strtotime('2013-02-22 11:00'),
+//);
 
 foreach ($result->attendees as $object) {
     $attendee = $object->attendee;
@@ -42,7 +42,7 @@ foreach ($result->attendees as $object) {
     $date = null;
     $floor = 0;
 
-    $date = $checkIns[array_rand($checkIns)];
+//    $date = $checkIns[array_rand($checkIns)];
 
     foreach ($attendee->barcodes as $barcodeObject) {
         $barcode = $barcodeObject->barcode;
@@ -53,7 +53,7 @@ foreach ($result->attendees as $object) {
     }
 
     if ($date) {
-        $floor = floor($date / 3600) * 3600;
+        $floor = floor($date / 900) * 900;
     }
 
     $data[$attendee->id] = array(
@@ -70,6 +70,15 @@ foreach ($result->attendees as $object) {
 }
 
 ksort($data);
+
+//foreach ($data as $row) {
+//    $row = array_map(function($value) {
+//        return '"' . $value . '"';
+//    }, $row);
+//
+//    echo implode(',', $row) . PHP_EOL;
+//}
+
 
 $cb = new ChartBlocks\Client(array(
     'token' => $config['chartblocks']['token'],
