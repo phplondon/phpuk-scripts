@@ -108,7 +108,7 @@ class Eventbrite {
             $resp = json_decode($resp);
 
             if (isset($resp->error) && isset($resp->error->error_message)) {
-                throw new Exception($resp->error->error_message);
+                throw new \Exception($resp->error->error_message);
             }
         }
         return $resp;
