@@ -3,7 +3,7 @@
     "description": "Collection of scripts for populating chart data for PHP2014 demo",
     "require": {
         "jublonet/codebird-php": "2.4.1",
-        "chartblocks/php-rest-sdk": "0.0.2 as dev-release",
+        "chartblocks/php-rest-sdk": "~1.0",
         "fennb/phirehose": "dev-master",
         "aferrandini/phpqrcode": "1.0.1"
     },
