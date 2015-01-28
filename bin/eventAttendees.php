@@ -20,8 +20,8 @@ $result = $eb->event_list_attendees(array(
 
 $data = array();
 
-$friday = strtotime('2013-02-21');
-$saturday = strtotime('2013-02-22');
+$friday = strtotime('2014-02-21');
+$saturday = strtotime('2014-02-22');
 
 //$checkIns = array(
 //    strtotime('2013-02-21 07:00'),
