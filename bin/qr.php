@@ -2,43 +2,50 @@
 
 chdir(__DIR__ . '/../');
 
-require('vendor/autoload.php');
+use JeroenDesloovere\VCard\VCard;
+
 $config = require('config/local.php');
+require('src/EventBrite.php');
+require('src/VCard/VCard.php');
+require('src/VCard/VCardException.php');
+require('src/VCard/VCardParser.php');
+require('src/Behat/Transliterator.php');
+require('src/phpqrcode/phpqrcode.php');
 
 $authentication_tokens = array(
-    'app_key' => $config['eventbrite']['appKey'],
-    'user_key' => $config['eventbrite']['userKey']
+    'token' => $config['eventbrite']['oauthToken']
 );
 
-$eb = new Php2014\EventBrite($authentication_tokens);
-
-$event = $eb->event_get(array('id' => $config['eventbrite']['eventId']));
-$tickets = array();
-foreach ($event->event->tickets as $ticketObject) {
-    $ticket = $ticketObject->ticket;
-    $tickets[$ticket->id] = $ticket;
-}
-
-$result = $eb->event_list_attendees(array(
-    'id' => $config['eventbrite']['eventId'],
-    'status' => 'attending',
-    'show_full_barcodes' => 'true',
-//    'count' => 10
-        ));
+$eb = new EventBrite($authentication_tokens);
+$endpoint = 'events/' . $config['eventbrite']['eventId'] . '/attendees/';
+$result = $eb->DoRequest($endpoint, array('method' => 'POST'));
 
 $data = array();
 
-foreach ($result->attendees as $object) {
-    $attendee = $object->attendee;
-
+foreach ($result->attendees as $attendee) {
     $barcode = null;
     foreach ($attendee->barcodes as $barcodeObject) {
-        $barcode = $barcodeObject->barcode->id;
+        $barcode = $barcodeObject->barcode;
     }
 
-    $filename = __DIR__ . '/../qr/' . $attendee->id . '.png';
-    echo 'Generating QR for ' . $attendee->id . ' ' . $barcode . PHP_EOL;
-    \PHPQRCode\QRcode::png($barcode, $filename, 'L', 30, 4);
+    // define vcard
+    $vcard = new VCard();
+
+    // add personal data
+    $vcard->addName($attendee->profile->last_name, $attendee->profile->first_name);
+
+    // add work data
+    $vcard->addCompany($attendee->profile->company);
+    $vcard->addJobtitle($attendee->profile->job_title);
+    $vcard->addEmail($attendee->profile->email);
+
+    $numberFilename = __DIR__ . '/../qr/' . $attendee->id . '_number.png';
+    echo 'Generating QR number for ' . $attendee->id . ' ' . $barcode . PHP_EOL;
+    QRcode::png($barcode, $numberFilename, 'L', 30, 4);
+
+    $vcardFilename = __DIR__ . '/../qr/' . $attendee->id . '_vcard.png';
+    echo 'Generating QR vcard for ' . $attendee->id . ' ' . $barcode . PHP_EOL;
+    QRcode::png($vcard->buildVCard(), $vcardFilename, 'L', 30, 4);
 }
 
 ksort($data);

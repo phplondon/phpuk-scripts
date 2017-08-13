@@ -2,3 +2,4 @@ composer.lock
 /config/local.php
 /vendor
 /nbproject
+/qr
