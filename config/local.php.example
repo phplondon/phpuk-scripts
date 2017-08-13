@@ -10,8 +10,7 @@ return array(
         'temperatureSetId' => '5305fddac9a61db06e321575',
     ),
     'eventbrite' => array(
-        'appKey' => '',
-        'userKey' => '',
+        'oauthToken' => '',
         'eventId' => '4512739726',
         'types' => array(
             '19876989' => array('Delegate', 'Two Day'),

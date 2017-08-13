@@ -1,27 +1,21 @@
 <?php
 
 chdir(__DIR__ . '/../');
-
-require('vendor/autoload.php');
 $config = require('config/local.php');
+require('src/EventBrite.php');
 
 $authentication_tokens = array(
-    'app_key' => $config['eventbrite']['appKey'],
-    'user_key' => $config['eventbrite']['userKey']
+    'token' => $config['eventbrite']['oauthToken']
 );
 
-$eb = new Php2014\EventBrite($authentication_tokens);
-$result = $eb->event_list_attendees(array(
-    'id' => $config['eventbrite']['eventId'],
-    'status' => 'attending',
-    'only_display' => 'last_name,address,profile,company,age,gender,barcodes',
-    'show_full_barcodes' => 'true'
-        ));
+$eb = new EventBrite($authentication_tokens);
+$endpoint = 'events/' . $config['eventbrite']['eventId'] . '/attendees/';
+$result = $eb->DoRequest($endpoint, array('method' => 'POST'));
 
 $data = array();
 
-$friday = strtotime('2014-02-21');
-$saturday = strtotime('2014-02-22');
+$thursday = strtotime('2017-08-17');
+$friday = strtotime('2017-08-18');
 
 //$checkIns = array(
 //    strtotime('2013-02-21 07:00'),
@@ -36,18 +30,18 @@ $saturday = strtotime('2014-02-22');
 //    strtotime('2013-02-22 11:00'),
 //);
 
-foreach ($result->attendees as $object) {
-    $attendee = $object->attendee;
-
+foreach ($result->attendees as $attendee) {
+    if ($attendee->status != 'Attending') {
+        continue;
+    }
+    
     $date = null;
     $floor = 0;
-
-//    $date = $checkIns[array_rand($checkIns)];
 
     foreach ($attendee->barcodes as $barcodeObject) {
         $barcode = $barcodeObject->barcode;
         if ((string) $barcode->status == 'used') {
-            $date = strtotime($barcode->date_modified) + 8 * 3600;
+            $date = strtotime($barcode->changed) + 8 * 3600;
             break;
         }
     }
@@ -55,15 +49,21 @@ foreach ($result->attendees as $object) {
     if ($date) {
         $floor = floor($date / 900) * 900;
     }
+    
+    foreach ($attendee->answers as $answer) {
+        if ($answer->question_id = '14185194') {
+            $gender = $answer->answer;
+        }
+    }
 
     $data[$attendee->id] = array(
-        'lastname' => $attendee->last_name,
-        'country' => empty($attendee->work_country_code) ? 'n/a' : $attendee->work_country_code,
-        'company' => empty($attendee->company) ? 'n/a' : $attendee->company,
-        'age' => empty($attendee->age) ? 'n/a' : $attendee->age,
+        'lastname' => $attendee->profile->last_name,
+        'firstname' => $attendee->profile->first_name,
+        'company' => $attendee->profile->company,
+        'title' => $attendee->profile->job_title,
         'gender' => empty($attendee->gender) ? 'n/a' : $attendee->gender,
+        'checkedInThursday' => ($floor >= $thursday && $floor < $thursday + 86400) ? 1 : null,
         'checkedInFriday' => ($floor >= $friday && $floor < $friday + 86400) ? 1 : null,
-        'checkedInSaturday' => ($floor >= $saturday && $floor < $saturday + 86400) ? 1 : null,
         'checkedInAt' => date('H:i', $floor),
         'i' => 1
     );
@@ -71,35 +71,10 @@ foreach ($result->attendees as $object) {
 
 ksort($data);
 
-//foreach ($data as $row) {
-//    $row = array_map(function($value) {
-//        return '"' . $value . '"';
-//    }, $row);
-//
-//    echo implode(',', $row) . PHP_EOL;
-//}
+foreach ($data as $row) {
+   $row = array_map(function($value) {
+       return '"' . $value . '"';
+   }, $row);
 
-
-$cb = new ChartBlocks\Client(array(
-    'token' => $config['chartblocks']['token'],
-    'secret' => $config['chartblocks']['secret'],
-        ));
-
-$set = $cb->getRepository('dataSet')->findById($config['chartblocks']['attendeeSetId']);
-
-$r = 2;
-$rowSet = new \ChartBlocks\DataSet\RowSetDynamic($set);
-foreach ($data as $person) {
-    $row = new \ChartBlocks\DataSet\Row($set, array('row' => $r));
-
-    $c = 1;
-    foreach ($person as $key => $value) {
-        $row->setCell($c, $value);
-        $c++;
-    }
-
-    $rowSet->addRow($row);
-    $r++;
+   echo implode(',', $row) . PHP_EOL;
 }
-
-$rowSet->save();
