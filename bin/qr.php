@@ -18,9 +18,18 @@ $authentication_tokens = array(
 
 $eb = new EventBrite($authentication_tokens);
 $endpoint = 'events/' . $config['eventbrite']['eventId'] . '/attendees/';
-$result = $eb->DoRequest($endpoint, array('method' => 'POST'));
+$params = array('method' => 'GET');
+$result = $eb->DoRequest($endpoint, $params);
+$cont = $result->pagination->continuation;
 
-$data = array();
+while ($cont) {
+    $params['continuation'] = $cont;
+    $r = $eb->DoRequest($endpoint, $params);
+    $result->attendees = array_merge($result->attendees, $r->attendees);
+    $cont = $r->pagination->continuation;
+}
+
+echo "Generating " . count($result->attendees) . " codes";
 
 foreach ($result->attendees as $attendee) {
     $barcode = null;
@@ -46,14 +55,4 @@ foreach ($result->attendees as $attendee) {
     $vcardFilename = __DIR__ . '/../qr/' . $attendee->id . '_vcard.png';
     echo 'Generating QR vcard for ' . $attendee->id . ' ' . $barcode . PHP_EOL;
     QRcode::png($vcard->buildVCard(), $vcardFilename, 'L', 30, 4);
-}
-
-ksort($data);
-
-foreach ($data as $person) {
-    $row = array_map(function($value) {
-        return '"' . $value . '"';
-    }, $person);
-    echo implode(',', $row);
-    echo PHP_EOL;
 }

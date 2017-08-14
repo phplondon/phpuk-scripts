@@ -17,14 +17,7 @@ class Eventbrite {
     }
 
     // For information about available API methods, see: https://www.eventbrite.co.uk/developer/v3/
-    function DoRequest($endpoint, $args) {
-        // Unpack our arguments
-        if (is_array($args) && array_key_exists(0, $args) && is_array($args[0])) {
-            $params = $args[0];
-        } else {
-            $params = array();
-        }
-
+    function DoRequest($endpoint, $params) {
         // Add authentication tokens to querystring
         if (isset($this->auth_tokens['token'])) {
             $params = array_merge($params, $this->auth_tokens);
